@@ -1,0 +1,3 @@
+templates has been updated, and demo compiles correctly and vst runs.
+testing left to do - check vst functionality, check on ssp and xmx
+important to check it has correct io and parameters, also there is code for bools? check this aka enumValues from parameter info.
