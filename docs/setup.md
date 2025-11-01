@@ -1,142 +1,152 @@
-# Setting up a development environment
-This document discusses how to setup a development environment for building SSP modules.
+# Setup Your Development Environment
 
+**One-time setup** to prepare your computer for building SSP/XMX modules.
 
-# General workflow
-There are three steps to build SSP modules, which must be completed in order.
+## Step 1: Install Development Tools
 
-a) setup the development environment 
-done once, and overed in DEVENV.md
-
-b) download/create project 
-done once, per project, and covered in this document.
-
-c) build project
-done each time you want to build/create the modules for the SSP
-
-
-note: you will need to ensure the build tools from the development enviroment are on your path.
-(as covered in DEVENV.md)
-
-
-
-Note: 
-Specific directories and examples are mentioned in these documents.
-however, most can be changed to your own requirements, with simple overrides.
-but this is not covered extensively here, to keep things clear and simple.
-
-
-# install Linux development tools 
-```
-    sudo apt install cmake git llvm clang g++-10-arm-linux-gnueabihf 
-```
-this is debian package manager, similar with pacman etc on other distros
-
-(although this is v10 of g++ others will likely work)
-
-
-# install macOS development using homebrew
-homebrew is useful package manager for macos for many open source tools.
-highly recommended :)  see https://brew.sh
-
-
-
-```
+### macOS Users
+```bash
+# Install Homebrew (if you don't have it)
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install required tools
 brew install cmake git llvm pkg-config arm-linux-gnueabihf-binutils
 
-```
-(some installs may need gcc-arm-embedded)
-
-
-## mac m1 - homebrew config
-place the following in .zshrc
-```
+# Add to your shell config (.zshrc or .bashrc)
+# Apple Silicon Macs:
 export PATH=/opt/homebrew/bin:"${PATH}"
-```
 
-## intel macs - homebrew config 
-place the following in .zshrc/.bashrc as appropiate.
-
-
-```
+# Intel Macs:
 export PATH=/usr/local/bin:"${PATH}"
 ```
 
+### Linux Users
+```bash
+# Ubuntu/Debian
+sudo apt install cmake git llvm clang g++-10-arm-linux-gnueabihf
 
-
-
-# setup requirements for build
-
-we need a copy of the build root for the SSP to build
-this is detailed in this post:
-https://forum.percussa.com/t/update-13072022-superbooth-2022-sd-card-image-fixes-for-usb-audio-sample-rate-switching-asio-support/1556
-
-we need to download from :
-https://sw13072022.s3.us-west-1.amazonaws.com/arm-rockchip-linux-gnueabihf_sdk-buildroot.tar.gz
-
-
-unzip into `~/buildroot` e.g.
-
+# Other distros: use your package manager (pacman, yum, etc.)
 ```
-mkdir ~/buildroot
-cd ~/buildroot
-mv ~/Downloads/arm-rockchip-linux-gnueabihf_sdk-buildroot.tar.gz  .
+
+### Windows Users
+**Install Linux in a Virtual Machine** - Windows builds are not supported.
+
+## Step 2: Download Build Tools
+
+1. **Download the buildroot**:  
+   SSP  : [arm-rockchip-linux-gnueabihf_sdk-buildroot.tar.gz](https://sw13072022.s3.us-west-1.amazonaws.com/arm-rockchip-linux-gnueabihf_sdk-buildroot.tar.gz)
+   XMX  :  [aarch64-rockchip-linux-gnu_sdk-buildroot.tar.gz](https://sw13072022.s3.us-west-1.amazonaws.com/aarch64-rockchip-linux-gnu_sdk-buildroot.tar.gz)
+
+2. **Extract to ~/buildroot**:
+```bash
+mkdir -p ~/buildroot/ssp
+cd ~/buildroot/ssp
+# Move your downloaded file here, then:
 tar xzf arm-rockchip-linux-gnueabihf_sdk-buildroot.tar.gz
-```
 
-decompression (gz) may not be necessary on some OS versions or browsers, as they may automatically unzip.
-if its just .tar use.
-```
-tar xf arm-rockchip-linux-gnueabihf_sdk-buildroot.tar
-```
-
-if all is ok, then we will see
-```
-% ls ~/buildroot/arm-rockchip-linux-gnueabihf_sdk-buildroot/libexec 
-awk     c++-analyzer    ccc-analyzer    gcc
-```
-
-note: this directory can be overriden using environment var (if you need to..)
-```
-export SSP_BUILDROOT=$HOME/buildroot/ssp/arm-rockchip-linux-gnueabihf_sdk-buildroot
-```
-
-
-
-
-
-
-# testing by building examples 
-
-
-first we will just build the example that is included to get used to the build system.
-(then we will create our own module :) )
-
-### STEP 1 - prepare the build (examples)
-assuming we are using the ssp-sdk examples as above
-so are in `~/projects/ssp-sdk`
+# mkdir -p ~/buildroot/xmx
+# cd ~/buildroot/xmx
+# tar xzf aarch64-rockchip-linux-gnu_sdk-buildroot.tar.gz
 
 ```
-cd examples
-mkdir build 
-cd build 
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=../xcSSP.cmake .. 
+
+3. **Verify installation**:
+```bash
+ls ~/buildroot/ssp/arm-rockchip-linux-gnueabihf_sdk-buildroot/libexec
+# Should show: awk c++-analyzer ccc-analyzer gcc
+
+# ls ~/buildroot/xmx/aarch64-rockchip-linux-gnu_sdk-buildroot/libexec
 ```
 
+4. **Configure environment variables**: (recommended)
+```bash
+# Add these to your shell config file (.zshrc, .bashrc, etc.)
+export SSP_BUILDROOT="$HOME/buildroot/ssp/arm-rockchip-linux-gnueabihf_sdk-buildroot"
 
+# For XMX support (if you have the XMX buildroot):
+# export XMX_BUILDROOT="$HOME/buildroot/xmx/aarch64-rockchip-linux-gnu_sdk-buildroot"
 
-### STEP 2 - compile (examples) 
-
-the moment we have been building up to...actually compiling the module! 
-
+# Reload your shell config
+source ~/.zshrc  # or source ~/.bashrc
 ```
-cmake --build . -- -j 4 
+
+alternativly (not recommended), untar directly into ```~/buildroot``
+
+**Why set these variables?**
+- Ensures the build system finds your toolchains automatically
+- Avoids "BUILDROOT environment variable missing" warnings
+- Makes switching between SSP and XMX builds easier
+
+## Step 4: Get This Project
+
+```bash
+# Create projects folder
+mkdir ~/projects
+cd ~/projects
+
+# Download the project
+git clone https://github.com/thetechnobear/PERCUSSA.RNBO
+cd PERCUSSA.RNBO
+
+# Download dependencies (JUCE framework)
+git submodule update --init --recursive
 ```
 
-voila, we have build the modules
+## Step 5: Verify Your Environment
 
-you will see that whilst building, it reports the targets... 
-aka, the modules that you are going to want to copy to your SSP 
+Before attempting to build anything, use the built-in environment checker:
+
+```bash
+# Check your complete development environment
+python3 scripts/check.py
+```
+
+This script will verify:
+- ✅ All required development tools are installed
+- ✅ Toolchains and build environments are properly configured  
+- ✅ Project structure and dependencies are complete
+- ✅ Any existing modules and their status
+
+**Fix any issues** reported by the checker before proceeding.
+
+## Step 6: Test Your Setup
+
+Create and build a demo module to verify everything works:
+
+```bash
+# Create a demo module with example RNBO code
+python3 scripts/addDemo.py
+
+# Build it (this may take a few minutes the first time)
+mkdir build
+cd build
+cmake ..
+cmake --build .
+
+# Clean up the demo
+cd ..
+python3 scripts/removeModule.py DEMO --force
+```
+
+## ✅ Success!
+
+If the demo builds without errors, you're ready to create your own modules!
+
+**Next step**: [Creating Modules](creatingmodules.md)
+
+## Troubleshooting
+
+**Environment issues?**
+- Run `python3 scripts/check.py` to get a detailed status report
+- The checker will identify specific problems and suggest solutions
+
+**Build errors?** 
+- Check that all tools are installed correctly
+- Verify the buildroot path: `~/buildroot/arm-rockchip-linux-gnueabihf_sdk-buildroot/`
+- Try the demo build first before creating custom modules
+- Use the environment checker to validate your setup
+
+**Need help?**
+- Check the [Percussa forum](https://forum.percussa.com) for community support 
 
 

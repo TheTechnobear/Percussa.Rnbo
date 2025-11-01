@@ -1,186 +1,167 @@
-# building 
-This document covers creating/downloading a project , and then building it for the SSP.
+# Creating Your RNBO Modules
 
+Turn your Max RNBO patches into SSP/XMX modules using simple Python scripts.
 
-# general workflow
-There are three steps to build SSP modules, which must be completed in order.
+**Prerequisites**: Complete the [setup process](setup.md) first.
 
-a) setup the development environment 
-done once, and covered in setup.md
+## Option 1: Try the Demo (Recommended First Step)
 
-b) download/create project 
-done once, per project, and covered in this document.
+Test your setup with a working example:
 
-c) build project
-done each time you want to build/create the modules for the SSP
+```bash
+# Create demo module with example RNBO code
+python3 scripts/addDemo.py
 
+# Build for testing on your computer (VST3)
+mkdir build
+cd build
+cmake ..
+cmake --build .
 
-note: you will need to ensure the build tools from the development enviroment are on your path.
-(as covered in DEVENV.md)
-
-
-
-Note: 
-Specific directories and examples are mentioned in these documents.
-however, most can be changed to your own requirements, with simple overrides.
-but this is not covered extensively here, to keep things clear and simple.
-
-
------
-
-# download/create project using RNBO 
-
-obviously we need to have some code to create a module :)
-either we are going to create our own new code, or download an existing project.
-
-lets cover the first.
-
-
-notes:
-Im not going to cover in any detail, the following   
-- git, there are many guides on this
-- c++ programming, dsp programming and related
-(Id recommend the juce docs for a good starter here)
-
-
-
-we first download the code from github, I suggest putting the code in a directory somewhere
-
-e.g. 
-```
-mkdir ~/projects
-cd ~/projects
+# The demo creates a 4-channel attenuator module
+# Find DEMO.vst3 in build/modules/DEMO/DEMO_artefacts/
 ```
 
-now download the code
-```
-git clone https://github.com/thetechnobear/PERCUSSA.RNBO
-```
+## Option 2: Create Your Own Module
 
-change into this project directory
-```
-cd PERCUSSA.RNBO
-```
+### Step 1: Create Module Structure
 
-now we need to download the code this repo is dependent on , which is JUCE and the ssp-sdk
-this is simple
-```
-git submodule update --init --recursive
+Use the interactive script:
+```bash
+python3 scripts/createModule.py
 ```
 
-ok, congratulations... now we are all set to create our first module!
-
-
-
-# building examples 
-
-
-first we will just build the example that is included to get used to the build system.
-(then we will create our own module :) )
-
-### STEP 1 - prepare the build (examples)
-assuming we are using the ssp-sdk examples as above
-so are in `~/projects/ssp-sdk`
-
-```
-cd examples
-mkdir build 
-cd build 
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=../xcSSP.cmake .. 
+Or specify details directly:
+```bash
+python3 scripts/createModule.py VERB --name "My Reverb" --description "Lush reverb effect" --author "Your Name"
 ```
 
+**Requirements**:
+- Module ID: **Exactly 4 uppercase letters/numbers** (e.g., VERB, DLY1, FILT)
+- Must start with a letter
+- Each module needs a unique ID
+
+### Step 2: Export Your RNBO Patch
+
+In Max, export your RNBO patch with these **exact settings**:
+
+**For module named "RVRB":**
+- **Export Type**: C++ 
+- **Output Directory**: `modules/RVRB/RVRB-rnbo/` 
+- **Export Name**: `RVRB.cpp.h`
+- **Codegen Class Name**: `RVRBRnbo`
+- **Export Options**:
+  - ✅ Minimal Export
+  - ❌ Copy C++ library code
+
+⚠️ **Critical**: Codegen class name must be `[ModuleId]Rnbo`
 
 
-### STEP 2 - compile (examples) 
+### Step 3: Build Your Module
 
-the moment we have been building up to...actually compiling the module! 
-
-```
-cmake --build . -- -j 4 
-```
-
-voila, we have build the modules
-
-you will see that whilst building, it reports the targets... 
-aka, the modules that you are going to want to copy to your SSP 
-
-
-
-
-
---- 
-
-now the moment you have been waiting for... creating your very own modules ! 
-
-
-# creating your OWN rnbo based modules ! 
-
-
-### STEP 1 - create your MODULE
-the first step, we need to do is to 'copy' this project to your new module
-
-we can do this using the create modules script, this takes ONE parameter the NAME of your module
-lets create one called TEST.
-
-
-
-note: we assume you are in the TOP level directory for this to work
-e.g. `~/projects/PERCUSSA.RNBO
-
-```
-./scripts/create_module.sh TEST
-```
-
-Important Note : ONLY use a 4 LETTER CODE.... nothing longer, and you need it to be UNIQUE for your module!
-
-this will create a directory called 
-```
-~/projects/PERCUSSA.RNBO/modules/TEST
-```
-
-see at the bottom of this document, to understand a little about what create_module.sh does.
-
-
-
-
-### STEP 2 - export your RNBO code to your module.
-
-so the above template will not DO anything, wont even compile! 
-
-we need the code generated by RNBO.
-
-so open MAX, create an RNBO patch, then export the code to 
-```~/projects/PERCUSSA.RNBO/modules/TEST/TEST-export```
-
-
-using RNBO is beyond the scope of this document ;) 
-you can find more at https://rnbo.cycling74.com
-
-### STEP 3a - prepare the build
-this step only needs to be done once, each time you create a new module, as it prepares the build
-
-we basically create a build directory (if it doesnt exist)
-```
-mkdir build 
-cd build 
-```
-
-then we prepare the build files
-```
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=../xcSSP.cmake .. 
-```
-
-
-### STEP 3b - compiling our module
-the moment of truth, we can now build our SSP module 
-```
-cd build 
+**For testing on your computer (VST3)**:
+```bash
+mkdir build
+cd build
+cmake ..
 cmake --build .
 ```
 
-### STEP 4 - copy to SSP / XMX
-once the build is complete, it will tell you the location of the shared library (TEST.so) that has been built.
-you can now copy this to the SSP / XMX sd card and place in plugins directory.
+**For XMX hardware**:
+```bash
+mkdir build.ssp
+cd build.ssp
+cmake -DCMAKE_TOOLCHAIN_FILE=../xcSSP.cmake ..
+cmake --build .
+```
+
+**For XMX hardware**:
+```bash
+mkdir build.xmx
+cd build.xmx
+cmake -DCMAKE_TOOLCHAIN_FILE=../xcXMX.cmake ..
+cmake --build .
+```
+
+### Step 4: Install Your Module
+
+**Testing (VST3)**: 
+- Find your `.vst3` file in `build/modules/YOUR_MODULE/YOUR_MODULE_artefacts/`
+- Load in any VST3 host (try JUCE AudioPluginHost)
+
+**SSP/XMX Hardware**:
+- Find your `.so` file in `build.ssp/modules/YOUR_MODULE/` or `build.xmx/modules/YOUR_MODULE/`
+- Copy to SSP/XMX SD card in the `plugins` folder
+
+## Managing Modules
+
+### List All Modules
+```bash
+python3 scripts/removeModule.py --list
+```
+
+### Remove a Module
+```bash
+python3 scripts/removeModule.py YOUR_MODULE
+```
+
+## Building Tips
+
+### Build Targets
+
+- **Local build** (`cmake ..`): Creates VST3 for testing on your computer
+- **SSP build** (`cmake -DCMAKE_TOOLCHAIN_FILE=../xcSSP.cmake ..`): Creates .so for SSP hardware  
+- **XMX build** (`cmake -DCMAKE_TOOLCHAIN_FILE=../xcXMX.cmake ..`): Creates .so for XMX hardware
+
+### Performance Tips
+
+- **First build**: Takes several minutes (compiling JUCE framework)
+- **Subsequent builds**: Much faster (only your changes)
+- **Clean builds**: Delete build folders and start fresh if you have issues
+
+### Troubleshooting
+
+**Module won't build?**
+- Check that your RNBO export is in the correct folder
+- Verify your module ID is exactly 4 characters, uppercase, starts with letter
+- Try building the demo first to test your setup
+
+**RNBO export issues?**
+- Make sure you export "C++ Source Code" (not other formats)
+- Export the entire contents to the module's RNBO folder
+- Check that files like `description.json` and `.cpp.h` files are present
+
+**Need to start over?**
+```bash
+# Remove your module and try again
+python3 scripts/removeModule.py YOUR_MODULE --force
+python3 scripts/createModule.py YOUR_MODULE
+```
+
+## What Gets Created
+
+When you create a module, you get:
+
+```
+modules/YOUR_MODULE/
+├── CMakeLists.txt           # Build configuration  
+├── Source/                  # Plugin source code
+│   ├── PluginProcessor.cpp  # Main audio processing
+│   ├── PluginEditor.cpp     # Full SSP interface
+│   └── PluginMiniEditor.cpp # Compact XMX interface
+└── YOUR_MODULE-rnbo/        # YOUR RNBO EXPORT GOES HERE
+    ├── description.json     # RNBO patch info
+    ├── YOUR_MODULE.cpp.h     # RNBO generated code
+    └── dependencies.json    # RNBO dependencies
+```
+
+The template automatically:
+- ✅ Detects your RNBO parameters and creates SSP controls
+- ✅ Sets up audio input/output based on your patch
+- ✅ Handles SSP-specific display and interaction
+- ✅ Creates both full SSP and compact XMX interfaces
+
+**Next**: Start with the demo, then create your first module!
 
 
 

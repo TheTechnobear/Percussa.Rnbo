@@ -1,107 +1,45 @@
-# Building SSP/XMX modules from Max RNBO patches
+# Create Percussa SSP/XMX Modules from Max RNBO Patches
 
-this project is designed to allow non-developers to create modules for the Percussa SSP and XMX,  using  [Cycling 74s RNBO](https://cycling74.com/products/rnbo)
+Turn your [Max RNBO](https://cycling74.com/products/rnbo) audio patches into modules for the **Percussa SSP** and **XMX** eurorack modules.
 
-modules created are completely independent of RNBO, and so can be **used** without a Max or RNBO license.
+**Perfect for musicians and sound designers** - no programming required!
 
+## Quick Start
 
-# Requirements
+1. **Setup your computer** → [docs/setup.md](docs/setup.md) *(one-time setup)*
+2. **Create modules** → [docs/creatingmodules.md](docs/creatingmodules.md)
 
-This projects currently is only support on macOS and Linux.
+## What You Need
 
-Whilst windows users could modify build files, this is non-trivial.
-I would recommend installing a Virtual Machine (VM), and run Linux under windows.
+- **Computer**: macOS or Linux *(Windows via Linux VM)*
+- **Max/RNBO**: To create patches *(optional - you can use existing modules without RNBO)*
+- **30 minutes**: For initial setup
 
+## What You Get
 
-# Getting Started
+- **Independent modules**: Work on any SSP/XMX without requiring Max or RNBO
+- **Professional quality**: Same technology used by commercial module developers
+- **Complete control**: Customize your modules however you want
 
-There are two steps for creating Percussa SSP modules based on RNBO
+## Key Features
 
-first, is to create a 'development environment', covered in [docs/setup.md](docs/setup.md)
+✅ **Simple Python scripts** - Easy commands for creating and managing modules  
+✅ **Demo included** - Working example to test your setup  
+✅ **Cross-platform builds** - Test on your computer, deploy to hardware  
+✅ **Template system** - Handles all the complex technical details  
 
-second, is to download projects, and build them, covered in [docs/creatingmodules.md](docs/creatingmodules.md)
+## RNBO Version Support
+Tested with **RNBO v1.4.2**
 
+## License & Usage
 
-note: the development enviroment stage is **identical** the one used for the percussa ssp sdk.
+- **This project**: GPL license
+- **Your modules**: Free to distribute (check JUCE and RNBO licenses for commercial use)
+- **End users**: Can use your modules without needing Max or RNBO
 
+## Resources
 
-# Next Steps
-
-This project does not contain any details relating how to code RNBO patches.
-details and tutorials can be found here:
-
-RNBO - https://cycling74.com/products/rnbo
-
-
-# Do I need to buy Max/RNBO?
-
-No, but its beneficial, if you wish to CREATE modules.
-
-any module created with this project can be used by any SSP user **WITHOUT** MAX/RNBO.
-
-
-# RNBO Version
-tested version :  RNBO v1.4.2
-
-
-
-# Advanced Info 
-
-This projects works by using a 'template' of code that combines code necessary to build the module and the exported RNBO code.
-It's important to realise that we **copy** this template when we use 'create_module', this means that this code can be fully customised.
-(you can of course, keep exporting the RNBO patch, as this is not part of this template)
-This is very powerful, as customised code can make assumptions about the RNBO patch, that a generic solution (this project) cannot.
-
-In this way, we can use this project, to enable us to prototype a module, but later extend it to a 'polished' solution.
-
-
-(I hope to add some details about how to do some common/easy customisations as a later date, assuming interest)
-
-
-# Current Limitations 
-(subject to change)
-- no midi support
-- in~/out~ are unnamed (RNBO limitation) 
-
-
-
-# Can I develop/test modules with the SSP?
-
-yes... but I dont support it ;) 
-
-the environement we create above is a cross-compiling environent running on mac/linux.
-we use CMake to supply the toolchain to do this (xcSSP.cmake and xcXMX.cmake )
-
-however, if you use cmake and omit the toolchain (so simply `cmake ..`) , it will build natively.
-
-this is why I build the SSP/XMX modules as 'wrapped' VST3, so that it can be loaded into Plugin host.
-(hint: the JUCE audio plugin host is ideal)
-
-
-Personally, I use (and recommend) VSCode for this type of development. It loads CMake file natively for projects, and is cross platform.
-of course, any IDE that supports CMake could work.
-
-note: I do this as described in the devenv/building docs, so as to ensure minimum dependancies for other users.
-
-I now include suppoort for CMakePresets which allows building for local, ssp and xmx targets
-
-
-
-# Licencing 
-This project is covered by GPL.
-
-ALSO, users should be are aware of other licencing implications, as this is THIER responsiblity.
-
-JUCE - the template uses JUCE, which you may use FREE as an **OPEN SOURCE** project, commercial projects need a licence
-RNBO - Cycling 74 have a licence for code exported using RNBO.
-
-I will not give specifics here, as companies can change license details, it is your responsibly to check.
-
-
-# Other Resources
-
-
-Percussa SSP - https://percussa.com
-
-Percussa SSP BUILDROOT - https://sw13072022.s3.us-west-1.amazonaws.com/arm-rockchip-linux-gnueabihf_sdk-buildroot.tar.gz
+- **Percussa**: [percussa.com](https://percussa.com)
+- **RNBO tutorials**: [cycling74.com/products/rnbo](https://cycling74.com/products/rnbo)
+- **SSP Buildroot**: [Download](https://sw13072022.s3.us-west-1.amazonaws.com/arm-rockchip-linux-gnueabihf_sdk-buildroot.tar.gz)
 
