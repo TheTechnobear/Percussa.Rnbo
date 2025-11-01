@@ -127,7 +127,7 @@ python3 scripts/removeModule.py YOUR_MODULE
 - Try building the demo first to test your setup
 
 **RNBO export issues?**
-- Make sure you export "C++ Source Code" (not other formats)
+- Make sure you export "C++ Source Code" (not other formats) with settings as detailed above
 - Export the entire contents to the module's RNBO folder
 - Check that files like `description.json` and `.cpp.h` files are present
 
