@@ -118,11 +118,15 @@ Create and build a demo module to verify everything works:
 # Create a demo module with example RNBO code
 python3 scripts/addDemo.py
 
-# Build it (this may take a few minutes the first time)
-mkdir build
-cd build
-cmake ..
-cmake --build .
+# Build VST (this may take a few minutes the first time)
+```bash
+cmake --fresh -B build && cmake --build build 
+
+# Build for SSP (optional, this may take a few minutes the first time)
+cmake --fresh -B build.ssp -DCMAKE_TOOLCHAIN_FILE=../xcSSP.cmake && cmake --build build.ssp
+
+# Build for XMX (optional, this may take a few minutes the first time)
+cmake --fresh -B build.xmx -DCMAKE_TOOLCHAIN_FILE=../xcXMX.cmake && cmake --build build.xmx
 
 # Clean up the demo
 cd ..

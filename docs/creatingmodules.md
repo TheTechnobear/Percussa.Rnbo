@@ -4,25 +4,10 @@ Turn your Max RNBO patches into SSP/XMX modules using simple Python scripts.
 
 **Prerequisites**: Complete the [setup process](setup.md) first.
 
-## Option 1: Try the Demo (Recommended First Step)
+## Create Your Own Module
 
-Test your setup with a working example:
-
-```bash
-# Create demo module with example RNBO code
-python3 scripts/addDemo.py
-
-# Build for testing on your computer (VST3)
-mkdir build
-cd build
-cmake ..
-cmake --build .
-
-# The demo creates a 4-channel attenuator module
-# Find DEMO.vst3 in build/modules/DEMO/DEMO_artefacts/
-```
-
-## Option 2: Create Your Own Module
+note: if you are new to RNBO can take a look at the demo max/rnbo patch, which you will find in ./max
+so you could use the following steps, usng that patch. then perhaps modify it?
 
 ### Step 1: Create Module Structure
 
@@ -42,6 +27,7 @@ python3 scripts/createModule.py VERB --name "My Reverb" --description "Lush reve
 - Each module needs a unique ID
 
 ### Step 2: Export Your RNBO Patch
+
 
 In Max, export your RNBO patch with these **exact settings**:
 
@@ -111,7 +97,7 @@ python3 scripts/removeModule.py YOUR_MODULE
 
 - **First build**: Takes several minutes (compiling JUCE framework)
 - **Subsequent builds**: Much faster (only your changes)
-- **Clean builds**: Delete build folders and start fresh if you have issues
+- **Clean builds**: Delete build folders and start fresh if you have issues 
 
 ### Troubleshooting
 
