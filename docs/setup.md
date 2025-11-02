@@ -80,16 +80,27 @@ alternativly (not recommended), untar directly into ```~/buildroot``
 
 ## Step 4: Get This Project
 
+**Option A: Fork Repository (Recommended)**
+
+This allows you to save your work and share plugins:
+
+1. Create a free GitHub account at [github.com](https://github.com)
+2. Go to [https://github.com/TheTechnobear/PERCUSSA.RNBO](https://github.com/TheTechnobear/PERCUSSA.RNBO)
+3. Click "Fork" and name it meaningfully (e.g., `MySSPModules`)
+4. Clone your fork:
+
 ```bash
-# Create projects folder
-mkdir ~/projects
-cd ~/projects
+git clone https://github.com/[YourUsername]/[YourRepoName].git
+cd [YourRepoName]
+git submodule update --init --recursive
+git remote add upstream https://github.com/TheTechnobear/PERCUSSA.RNBO.git
+```
 
-# Download the project
-git clone https://github.com/thetechnobear/PERCUSSA.RNBO
+**Option B: Direct Clone (Not Recommended)**
+
+```bash
+git clone https://github.com/TheTechnobear/PERCUSSA.RNBO.git
 cd PERCUSSA.RNBO
-
-# Download dependencies (JUCE framework)
 git submodule update --init --recursive
 ```
 
