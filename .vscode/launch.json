@@ -6,7 +6,7 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "/Users/kodiak/bin/AudioPluginHost.app",
-      "args": ["./DEMO.filtergraph"],
+      "args": ["./demo.filtergraph"],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/resources",
       "environment": [],

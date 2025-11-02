@@ -61,27 +61,21 @@ In Max, export your RNBO patch with these **exact settings**:
 
 **For testing on your computer (VST3)**:
 ```bash
-mkdir build
-cd build
-cmake ..
-cmake --build .
+cmake --fresh -B build && cmake --build build 
+```
+susequent builds can be done with `` cmake --build build```
+
+**For SSP hardware**:
+```bash
+cmake --fresh -B build.ssp -DCMAKE_TOOLCHAIN_FILE=../xcSSP.cmake && cmake --build build.ssp
 ```
 
 **For XMX hardware**:
 ```bash
-mkdir build.ssp
-cd build.ssp
-cmake -DCMAKE_TOOLCHAIN_FILE=../xcSSP.cmake ..
-cmake --build .
+cmake --fresh -B build.xmx -DCMAKE_TOOLCHAIN_FILE=../xcXMX.cmake && cmake --build build.xmx
 ```
 
-**For XMX hardware**:
-```bash
-mkdir build.xmx
-cd build.xmx
-cmake -DCMAKE_TOOLCHAIN_FILE=../xcXMX.cmake ..
-cmake --build .
-```
+subsequent builds can be done with  ```cmake --build build.ssp``` or ```cmake --build build.xmx```
 
 ### Step 4: Install Your Module
 
@@ -90,8 +84,13 @@ cmake --build .
 - Load in any VST3 host (try JUCE AudioPluginHost)
 
 **SSP/XMX Hardware**:
-- Find your `.so` file in `build.ssp/modules/YOUR_MODULE/` or `build.xmx/modules/YOUR_MODULE/`
-- Copy to SSP/XMX SD card in the `plugins` folder
+plugin file will be located in artifacts : 
+e.g for demo : 
+``` modules/DEMO/DEMO_artefacts/Release/VST3/DEMO.vst3/Contents/armv7l-linux/DEMO.so```
+or 
+```modules/DEMO/DEMO_artefacts/Release/VST3/DEMO.vst3/Contents/armv7l-linux/DEMO.so```
+
+- Copy the .so file to SSP/XMX SD card in the `plugins` folder
 
 ## Managing Modules
 
@@ -107,11 +106,6 @@ python3 scripts/removeModule.py YOUR_MODULE
 
 ## Building Tips
 
-### Build Targets
-
-- **Local build** (`cmake ..`): Creates VST3 for testing on your computer
-- **SSP build** (`cmake -DCMAKE_TOOLCHAIN_FILE=../xcSSP.cmake ..`): Creates .so for SSP hardware  
-- **XMX build** (`cmake -DCMAKE_TOOLCHAIN_FILE=../xcXMX.cmake ..`): Creates .so for XMX hardware
 
 ### Performance Tips
 

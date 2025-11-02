@@ -31,10 +31,10 @@ static void printErrorMessage(const char* message) {
 #pragma GCC diagnostic ignored "-Wsign-compare"
 #pragma GCC diagnostic ignored "-Wswitch"
 #pragma GCC diagnostic ignored "-Wunused-variable"
-
-// mm compiler - warnings
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #pragma GCC diagnostic ignored "-Wunused-value"
+#pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wsuggest-override"
 // #endif
 #include "../__MOD__-rnbo/__MOD__.cpp.h"
 #pragma GCC diagnostic pop
