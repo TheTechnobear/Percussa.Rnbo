@@ -100,7 +100,7 @@ PluginProcessor::~PluginProcessor() {
 
 juce::AudioProcessor::BusesProperties PluginProcessor::getBusesProperties() {
     juce::AudioProcessor::BusesProperties props;
-    RNBO::DEMORnbo<RNBO::MinimalEngine<>> patch;
+    RNBO::__MOD__Rnbo<RNBO::MinimalEngine<>> patch;
     patch.initialize();
     unsigned I_MAX = patch.getNumInputChannels();
     for (auto i = 0; i < I_MAX; i++) {
