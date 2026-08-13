@@ -8,6 +8,10 @@
 
 #include "RNBO_Types.h"
 
+#ifndef RNBO_NOSTDLIB
+#include <atomic>
+#endif
+
 namespace RNBO {
 
 	// it is hard coded for now
@@ -500,6 +504,82 @@ namespace RNBO {
 			return values[i];
 		}
 
+		inline bool typeislockfree() const {
+#if defined(_MSC_VER)
+				//TODO
+#elif defined(__clang__) || defined(__GNUC__)
+			T dummy = 0;
+			return __atomic_is_lock_free(sizeof(T), &dummy);
+#endif
+#ifndef RNBO_NOSTDLIB
+			return std::atomic<T>{}.is_lock_free();
+#else
+			return false; //unknown
+#endif
+		}
+
+		inline T atomicload(const Index index, int order = 5) const { //order = 5 -> memory_order_seq_cst
+			if (index < getSize()) {
+				T *loc = reinterpret_cast<T*>(_dataRef->getData()) + index;
+#if defined(__clang__) || defined(__GNUC__)
+				//https://gcc.gnu.org/wiki/Atomic/GCCMM/LIbrary
+				T ret;
+				int order = 5;
+				//llvm's docs show a size arg as first arg but also says they use gcc's format which doesn't have the size
+				__atomic_load(loc, &ret, order);
+				return ret;
+#elif defined(_MSC_VER)
+				switch (sizeof(T)) {
+					case 8:
+						return InterlockedOr64(loc, 0);
+					case 4:
+						return InterlockedOr(loc, 0);
+					case 2:
+						return InterlockedOr16(loc, 0);
+					case 1:
+						return InterlockedOr8(loc, 0);
+					default:
+						return 0; //error
+				}
+#else
+				//TODO?
+				return *loc;
+#endif
+			}
+			return 0;
+		}
+
+		inline void atomicstore(const Index index, T value, int order = 5) {   //order = 5 -> memory_order_seq_cst
+			if (index < DataView<T, DR>::getSize()) {
+				T *loc = reinterpret_cast<T*>(_dataRef->getData()) + index;
+#if defined(__clang__) || defined(__GNUC__)
+				//https://gcc.gnu.org/wiki/Atomic/GCCMM/LIbrary
+				//llvm's docs show a size arg as first arg but also says they use gcc's format which doesn't have the size
+				__atomic_store(loc, &value, order);
+#elif defined(_MSC_VER)
+				switch (sizeof(T)) {
+					case 8:
+						InterlockedExchange64(loc, value);
+						break;
+					case 4:
+						InterlockedExchange(loc, value);
+						break;
+					case 2:
+						InterlockedExchange16(loc, value);
+						break;
+					case 1:
+						InterlockedExchange8(loc, value);
+						break;
+					default:
+						return; //error
+				}
+#else
+				//TODO?
+				*loc = value;
+#endif
+			}
+		}
+
 		DataView* operator->() {
 			return this;
 		}
@@ -675,6 +755,50 @@ namespace RNBO {
 		void requestSize(size_t size) {
 			DataView<T, DR>::requestSize(size);
 		}
+
+		inline size_t getChannels() const {
+			return 1;
+		}
+
+        OneDimensionalArray* setChannels(size_t channels) {
+            return this;
+        }
+
+		inline number getSampleRate() const {
+			return 0.0;
+		}
+
+		virtual OneDimensionalArray<T, DR>* allocateIfNeeded() override {
+			DataView<T, DR>::allocateIfNeeded();
+			return this;
+		}
+
+		inline T getSample(const size_t /*channel*/, const size_t index) const {
+			return DataView<T, DR>::operator[](index);
+		}
+
+		inline T getSampleSafe(const long channel, const long index) const {
+			if (channel == 0 && index < DataView<T, DR>::getSize()) {
+				return DataView<T, DR>::operator[](index);
+			}
+			return 0;
+		}
+
+		// channel numbers are 0 based
+		inline void setSample(const size_t /*channel*/, const size_t index, const T value) {
+			DataView<T, DR>::operator[](index) = value;
+		}
+
+		inline void setSampleSafe(const long channel, const long index, const T value) {
+			if (channel == 0 && index < DataView<T, DR>::getSize()) {
+				DataView<T, DR>::operator[](index) = value;
+			}
+		}
+
+		OneDimensionalArray<T, DR>* setSize(size_t size) override {
+			DataView<T, DR>::setSize(size);
+			return this;
+		}
 	};
 
 	/**
@@ -827,17 +951,17 @@ namespace RNBO {
 		: InterleavedAudioBuffer<float, DataRef>(dataRef, DataType::Float32AudioBuffer)
 		{}
 
-		virtual Float32Buffer* allocateIfNeeded() {
+		virtual Float32Buffer* allocateIfNeeded() override {
 			InterleavedAudioBuffer<float, DataRef>::allocateIfNeeded();
 			return this;
 		}
 
-		virtual Float32Buffer* setChannels(size_t channels) {
+		virtual Float32Buffer* setChannels(size_t channels) override {
 			InterleavedAudioBuffer<float, DataRef>::setChannels(channels);
 			return this;
 		}
 
-		virtual Float32Buffer* setSize(size_t size) {
+		virtual Float32Buffer* setSize(size_t size) override {
 			InterleavedAudioBuffer<float, DataRef>::setSize(size);
 			return this;
 		}
@@ -855,17 +979,17 @@ namespace RNBO {
 		: InterleavedAudioBuffer<double, DataRef>(dataRef, DataType::Float64AudioBuffer)
 		{}
 
-		virtual Float64Buffer* allocateIfNeeded() {
+		virtual Float64Buffer* allocateIfNeeded() override {
 			InterleavedAudioBuffer<double, DataRef>::allocateIfNeeded();
 			return this;
 		}
 
-		virtual Float64Buffer* setChannels(size_t channels) {
+		virtual Float64Buffer* setChannels(size_t channels) override {
 			InterleavedAudioBuffer<double, DataRef>::setChannels(channels);
 			return this;
 		}
 
-		virtual Float64Buffer* setSize(size_t size) {
+		virtual Float64Buffer* setSize(size_t size) override {
 			InterleavedAudioBuffer<double, DataRef>::setSize(size);
 			return this;
 		}
@@ -884,17 +1008,17 @@ namespace RNBO {
         : InterleavedAudioBuffer<SampleValue, DataRef>(dataRef, DataType::SampleAudioBuffer)
         {}
 
-        virtual SampleBuffer* allocateIfNeeded() {
+        virtual SampleBuffer* allocateIfNeeded() override {
             InterleavedAudioBuffer<SampleValue, DataRef>::allocateIfNeeded();
             return this;
         }
 
-        virtual SampleBuffer* setChannels(size_t channels) {
+        virtual SampleBuffer* setChannels(size_t channels) override {
             InterleavedAudioBuffer<SampleValue, DataRef>::setChannels(channels);
             return this;
         }
 
-        virtual SampleBuffer* setSize(size_t size) {
+        virtual SampleBuffer* setSize(size_t size) override {
             InterleavedAudioBuffer<SampleValue, DataRef>::setSize(size);
             return this;
         }
@@ -967,41 +1091,31 @@ namespace RNBO {
 
 	using Float64MultiBufferRef = DataViewRef<double, Float64MultiBuffer>;
 
-	/**
-	 * @private
-	 */
-	class IntBuffer : public OneDimensionalArray<uint32_t, DataRef>
-	{
-	public:
-		IntBuffer(DataRef& dataRef)
-		: OneDimensionalArray<uint32_t, DataRef>(dataRef)
-		{}
 
-		virtual IntBuffer* allocateIfNeeded() {
-			OneDimensionalArray<uint32_t, DataRef>::allocateIfNeeded();
-			return this;
-		}
-	};
+	using Int8Buffer = OneDimensionalArray<int8_t, DataRef>;
+	using Int8BufferRef = DataViewRef<int8_t, Int8Buffer>;
 
-	using IntBufferRef = DataViewRef<uint32_t, IntBuffer>;
-
-	/**
-	 * @private
-	 */
-	class UInt8Buffer : public OneDimensionalArray<uint8_t, DataRef>
-	{
-	public:
-		UInt8Buffer(DataRef& dataRef)
-		: OneDimensionalArray<uint8_t, DataRef>(dataRef)
-		{}
-
-		virtual UInt8Buffer* allocateIfNeeded() {
-			OneDimensionalArray<uint8_t, DataRef>::allocateIfNeeded();
-			return this;
-		}
-	};
-
+	using UInt8Buffer = OneDimensionalArray<uint8_t, DataRef>;
 	using UInt8BufferRef = DataViewRef<uint8_t, UInt8Buffer>;
+
+	using Int32Buffer = OneDimensionalArray<int32_t, DataRef>;
+	using Int32BufferRef = DataViewRef<int32_t, Int32Buffer>;
+
+	using UInt32Buffer = OneDimensionalArray<uint32_t, DataRef>;
+	using UInt32BufferRef = DataViewRef<uint32_t, UInt32Buffer>;
+
+	using Int64Buffer = OneDimensionalArray<int64_t, DataRef>;
+	using Int64BufferRef = DataViewRef<int64_t, Int64Buffer>;
+
+	using UInt64Buffer = OneDimensionalArray<uint64_t, DataRef>;
+	using UInt64BufferRef = DataViewRef<uint64_t, UInt64Buffer>;
+
+	using IntBuffer = OneDimensionalArray<Int, DataRef>;
+	using IntBufferRef = DataViewRef<Int, IntBuffer>;
+
+	using UIntBuffer = OneDimensionalArray<UInt, DataRef>;
+	using UIntBufferRef = DataViewRef<UInt, UIntBuffer>;
+
 
     /**
      * @brief A DataBuffer that has no type
