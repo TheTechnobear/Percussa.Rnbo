@@ -117,7 +117,7 @@ def print_success_message():
     print("\nNext steps:")
     print("1. Build the DEMO module:")
     print("cmake --fresh -B build && cmake --build build")
-    print("cmake --fresh -B build,ssp -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=./xcSSP.cmake && cmake --build build.ssp ")
+    print("cmake --fresh -B build.ssp -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=./xcSSP.cmake && cmake --build build.ssp ")
     print("cmake --fresh -B build.xmx -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=./xcXMX.cmake && cmake --build build.xmx ")
     print("\n3. Remove the DEMO module when done:")
     print("   python scripts/removeModule.py DEMO")
