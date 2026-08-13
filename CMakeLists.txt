@@ -42,6 +42,8 @@ else()
 set(INSTALL_PLUGIN 0)
 endif()
 
+string(TIMESTAMP TB_BUILD_DATE "%y%m%d")
+add_definitions(-DTB_BUILD_DATE="${TB_BUILD_DATE}")
 
 add_subdirectory(modules)
 
